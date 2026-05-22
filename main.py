@@ -1491,10 +1491,9 @@ async def subgram_op_callback(call: CallbackQuery, bot: Bot):
         ref_id = None
 
         if len(call.data.split(":")) > 1:
-            try:
-                ref_id = int(call.data.split(":")[1])
-            except ValueError:
-                logging.warning(f"Invalid ref_id format: {call.data}")
+            ref_id = call.data.split(":")[1]
+            if ref_id == "None" or not ref_id:
+                ref_id = None
 
         response = await request_op(
             user_id=user_id,
@@ -1507,31 +1506,44 @@ async def subgram_op_callback(call: CallbackQuery, bot: Bot):
         )
 
         if response != 'ok':
-            await bot.answer_callback_query(call.id, "❌ Вы всё ещё не подписаны на все каналы!", show_alert=True)
+            await bot.answer_callback_query(call.id, "❌ Вы всё ещё не подписаны на всех спонсоров!", show_alert=True)
             return
 
-        await bot.answer_callback_query(call.id, 'Спасибо за подписку 👍', show_alert=True)
+        await bot.answer_callback_query(call.id, '✅ Спасибо за подписку!', show_alert=True)
 
+        is_new_user = not user_exists(user_id)
 
-        if not user_exists(user_id):
-            try:
+        # ⚠️ КЛЮЧЕВОЙ МОМЕНТ: UTM увеличиваем ТОЛЬКО для НОВЫХ пользователей
+        if is_new_user:
+            # Сначала регистрируем пользователя
+            add_user(user_id, user.username, ref_id)
+            
+            # Затем обрабатываем UTM (если есть)
+            if ref_id:
                 urls_utm = get_urls_utm()
                 for url in urls_utm:
-                    url_title = url.split('=')[1]
-                    if ref_id == url_title:
-                        users_add_utm_op(url)
-                        ref_id = None
-                        break
-                add_user(user_id, user.username, ref_id)
+                    if '=' in url:
+                        url_title = url.split('=')[1]
+                        if str(ref_id) == str(url_title):
+                            users_add_utm_op(url)  # ✅ Только здесь увеличиваем счётчик
+                            logging.info(f"✅ UTM счётчик ОП увеличен для НОВОГО пользователя {user_id}")
+                            break
+            
+            # Выдаём реферальный бонус (тоже только для новых)
+            if ref_id and user_exists(ref_id):
                 await handle_referral_bonus(ref_id, user_id, bot)
-            except Exception as e:
-                logging.error(f"User registration error: {e}")
+        else:
+            # Существующий пользователь — просто логируем, UTM не трогаем
+            logging.info(f"ℹ️ Существующий пользователь {user_id} прошёл ОП, UTM счётчик НЕ увеличен")
 
         await send_main_menu(user_id, bot)
 
     except Exception as e:
         logging.error(f"Subgram op error: {e}", exc_info=True)
-        await bot.answer_callback_query(call.id, "⚠️ Произошла ошибка при проверке подписки", show_alert=True)
+        try:
+            await bot.answer_callback_query(call.id, "⚠️ Произошла ошибка", show_alert=True)
+        except Exception:
+            pass
 
 async def handle_referral_bonus(ref_id: Optional[int], new_user_id: int, bot: Bot):
     if not ref_id or not user_exists(ref_id):
