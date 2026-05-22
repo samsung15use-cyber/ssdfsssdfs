@@ -1863,13 +1863,13 @@ async def check_subs_callback(call: CallbackQuery, bot: Bot):
             if refferal_id is not None:
                 c_refs = get_user_referrals_count(refferal_id)
                 if c_refs < 50:
-                    nac = 0.7 * 2 if user_in_booster(refferal_id) else 0.7
+                    nac = 3 * 2 if user_in_booster(refferal_id) else 3
                     increment_stars(refferal_id, nac)
                 elif 50 <= c_refs < 250:
-                    nac = 1 * 2 if user_in_booster(refferal_id) else 1
+                    nac = 5 * 2 if user_in_booster(refferal_id) else 5
                     increment_stars(refferal_id, nac)
                 else:
-                    nac = 1.5 * 2 if user_in_booster(refferal_id) else 1.5
+                    nac = 7 * 2 if user_in_booster(refferal_id) else 7
                     increment_stars(refferal_id, nac)
                 increment_referrals(refferal_id)
                 new_ref_link = f"https://t.me/{ (await bot.me()).username }?start={refferal_id}"
