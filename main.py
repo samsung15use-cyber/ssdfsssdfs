@@ -711,7 +711,7 @@ async def utm_callback(call: CallbackQuery, bot: Bot):
 
 @router.callback_query(F.data.startswith('utm_'))
 async def utm_callback(call: CallbackQuery, bot: Bot):
-    if call.from.user.id in admins_id:
+    if call.from_user.id in admins_id:
         await bot.delete_message(call.message.chat.id, call.message.message_id)
         url1 = call.data.split('_')[1]
         url2 = call.data.split('_')[2]
