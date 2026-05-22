@@ -605,13 +605,13 @@ async def process_captcha(callback_query: CallbackQuery, state: FSMContext, bot:
             c_refs = get_user_referrals_count(referal)
             increment_referrals(referal)
             if c_refs < 50:
-                nac = 0.7 * 2 if user_in_booster(referal) else 0.7
+                nac = 3 * 2 if user_in_booster(referal) else 3
                 increment_stars(referal, nac)
             elif 50 <= c_refs < 250:
-                nac = 1 * 2 if user_in_booster(referal) else 1
+                nac = 5 * 2 if user_in_booster(referal) else 5
                 increment_stars(referal, nac)
             else:
-                nac = 1.5 * 2 if user_in_booster(referal) else 1.5
+                nac = 7 * 2 if user_in_booster(referal) else 7 
                 increment_stars(referal, nac)
 
             new_ref_link = f"https://t.me/{(await bot.me()).username}?start={referal}"
