@@ -1488,14 +1488,11 @@ async def subgram_op_callback(call: CallbackQuery, bot: Bot):
         user_id = user.id
         ref_id = None
 
-        # Получаем ref_id из callback_data
         if len(call.data.split(":")) > 1:
             ref_id = call.data.split(":")[1]
-            # Если ref_id == "None" или пустой — игнорируем
             if ref_id == "None" or not ref_id:
                 ref_id = None
 
-        # Проверяем подписку через SubGram
         response = await request_op(
             user_id=user_id,
             chat_id=call.message.chat.id,
@@ -1512,33 +1509,31 @@ async def subgram_op_callback(call: CallbackQuery, bot: Bot):
 
         await bot.answer_callback_query(call.id, '✅ Спасибо за подписку!', show_alert=True)
 
-        # Проверяем, является ли пользователь НОВЫМ
         is_new_user = not user_exists(user_id)
 
+        # ⚠️ КЛЮЧЕВОЙ МОМЕНТ: UTM увеличиваем ТОЛЬКО для НОВЫХ пользователей
         if is_new_user:
-            # 1. Сначала регистрируем пользователя в БД
+            # Сначала регистрируем пользователя
             add_user(user_id, user.username, ref_id)
             
-            # 2. И ТОЛЬКО ДЛЯ НОВОГО пользователя увеличиваем счетчик UTM
+            # Затем обрабатываем UTM (если есть)
             if ref_id:
                 urls_utm = get_urls_utm()
                 for url in urls_utm:
-                    # Защита от падения, если в url нет знака '='
                     if '=' in url:
                         url_title = url.split('=')[1]
                         if str(ref_id) == str(url_title):
-                            users_add_utm_op(url)  # ✅ Увеличиваем счётчик "Прошли ОП"
-                            logging.info(f"✅ UTM счётчик ОП увеличен для {user_id} (ref: {ref_id})")
+                            users_add_utm_op(url)  # ✅ Только здесь увеличиваем счётчик
+                            logging.info(f"✅ UTM счётчик ОП увеличен для НОВОГО пользователя {user_id}")
                             break
-                
-                # 3. Выдаем реферальный бонус
+            
+            # Выдаём реферальный бонус (тоже только для новых)
+            if ref_id and user_exists(ref_id):
                 await handle_referral_bonus(ref_id, user_id, bot)
-            else:
-                logging.info(f"ℹ️ Новый пользователь {user_id} без ref_id, UTM счётчик не увеличен")
         else:
-            logging.info(f"ℹ️ Существующий пользователь {user_id} прошёл ОП, но счётчик UTM НЕ увеличен (только для новых)")
+            # Существующий пользователь — просто логируем, UTM не трогаем
+            logging.info(f"ℹ️ Существующий пользователь {user_id} прошёл ОП, UTM счётчик НЕ увеличен")
 
-        # Отправляем меню (сработает и для новых, и для старых)
         await send_main_menu(user_id, bot)
 
     except Exception as e:
