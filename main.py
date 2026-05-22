@@ -713,16 +713,17 @@ async def utm_callback(call: CallbackQuery, bot: Bot):
 async def utm_callback(call: CallbackQuery, bot: Bot):
     if call.from_user.id in admins_id:
         await bot.delete_message(call.message.chat.id, call.message.message_id)
-        url1 = call.data.split('_')[1]
-        url2 = call.data.split('_')[2]
-        url_title = url2.split('=')[1]
-        url = url1 + "_" + url2
-        count_users = users_utm_count(url)
-        count_op_users = users_utm_count_op(url)
+        full_url = call.data[4:]
+        url_title = full_url.split('=')[-1]
+        
+        count_users = users_utm_count(full_url)
+        count_op_users = users_utm_count_op(full_url)
+        
         utm_link_use = InlineKeyboardBuilder()
-        utm_link_use.button(text="❌ Удалить ссылку", callback_data=f"delete_utm_{url}")
+        utm_link_use.button(text="❌ Удалить ссылку", callback_data=f"delete_utm_{full_url}")
         utm_link_use.button(text="⬅️ Назад", callback_data="list_utm")
         markup_utm_use = utm_link_use.adjust(1, 1).as_markup()
+        
         await bot.send_message(call.from_user.id, f"<b>🍀 Вы выбрали ссылку <code>#{url_title}</code></b>\n\n<blockquote>👤 Все пользователи: {count_users}\n👤 Прошли ОП: {count_op_users}</blockquote>", parse_mode='HTML', reply_markup=markup_utm_use)
     else:
         await bot.answer_callback_query(call.id, "⛔ У вас нет доступа", show_alert=True)
