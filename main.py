@@ -784,6 +784,21 @@ async def list_utm(call: CallbackQuery, bot: Bot):
 
         await bot.send_message(call.from_user.id, f"<b>📦 Список UTM-ссылок:</b>", parse_mode='HTML', reply_markup=builder_utm_links.as_markup())
 
+@router.callback_query(F.data.startswith("delete_utm:"))
+async def delete_utm_callback(call: CallbackQuery, bot: Bot):
+    if call.from_user.id not in admins_id:
+        await call.answer("⛔ Нет доступа", show_alert=True)
+        return
+    
+    utm_url = call.data.split(":", 1)[1]
+    
+    try:
+        delete_utm(utm_url)
+        await call.answer("✅ UTM-ссылка успешно удалена!", show_alert=True)
+        await list_utm(call, bot)  # Обновить список
+    except Exception as e:
+        await call.answer(f"❌ Ошибка: {e}", show_alert=True)
+
 @router.callback_query(F.data == "admin_lotery")
 async def adminka_lottery(call: CallbackQuery, bot: Bot):
     await bot.delete_message(call.message.chat.id, call.message.message_id)
