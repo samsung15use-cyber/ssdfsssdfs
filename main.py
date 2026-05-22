@@ -1024,12 +1024,12 @@ async def handle_withdraw_callback(call: CallbackQuery, bot: Bot):
         if get_balance_user(call.from_user.id) < stars:
             await bot.answer_callback_query(call.id, "❌ У вас недостаточно звезд для вывода!", show_alert=True)
             return
-        elif count_refs < 10 if user_in_booster(user_id) else count_refs < 15 :
+        elif count_refs < 2 if user_in_booster(user_id) else count_refs < 5 :
             if user_in_booster(user_id):
-                await bot.answer_callback_query(call.id, f"❌ Для вывода надо минимум 10 рефералов за текущую неделю! У тебя {count_refs}", show_alert=True)
+                await bot.answer_callback_query(call.id, f"❌ Для вывода надо минимум 2 рефералов за текущую неделю! У тебя {count_refs}", show_alert=True)
                 return
             else:
-                await bot.answer_callback_query(call.id, f"❌ Для вывода надо минимум 15 рефералов за текущую неделю! У тебя {count_refs}", show_alert=True)
+                await bot.answer_callback_query(call.id, f"❌ Для вывода надо минимум 5 рефералов за текущую неделю! У тебя {count_refs}", show_alert=True)
                 return
         else:
             await bot.delete_message(chat_id=call.from_user.id, message_id=call.message.message_id)
