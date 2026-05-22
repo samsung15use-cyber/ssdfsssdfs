@@ -721,13 +721,7 @@ async def utm_callback(call: CallbackQuery, bot: Bot):
         utm_link_use.button(text="❌ Удалить ссылку", callback_data=f"delete_utm:{url}")
         utm_link_use.button(text="⬅️ Назад", callback_data="list_utm")
         markup_utm_use = utm_link_use.adjust(1, 1).as_markup()
-        await bot.send_message(call.from_user.id, f"<b>🍀 Вы выбрали ссылку <code>#{url_title}</code></b>\n\n<blockquote>👤 Все пользователи: {count_users}\n👤 Прошли ОП: {count_op_users}</blockquote>", parse_mode='HTML', reply_markup=markup_utm_use)
-
-@router.callback_query(F.data == "delete_utm")
-async def delete_utm(call: CallbackQuery, bot: Bot, state: FSMContext):
-    if call.message.chat.id in admins_id:
-        await state.set_state(AddUtmState.waiting_for_delete)
-        await bot.send_message(call.from_user.id, "🌐 Введите название UTM-ссылки:", parse_mode='HTML')
+        await bot.send_message(call.from_user.id, f"<b>🍀 Вы выбрали ссылку <code>#{url_title}</code></b>\n\n<blockquote>👤 Все пользователи: {count_users}\n👤 Прошли ОП: {count_op_users}</blockquote>", parse_mode='HTML', reply_markup=markup_utm_user)            
 
 @router.callback_query(F.data == "add_utm")
 async def add_utm(message: Message, bot: Bot, state: FSMContext):
@@ -784,26 +778,29 @@ async def list_utm(call: CallbackQuery, bot: Bot):
 
         await bot.send_message(call.from_user.id, f"<b>📦 Список UTM-ссылок:</b>", parse_mode='HTML', reply_markup=builder_utm_links.as_markup())
 
-@router.callback_query(F.data.startswith("delete_utm_"))
-async def delete_utm_direct(call: CallbackQuery, bot: Bot):
+@router.callback_query(F.data.startswith("delete"))
+async def delete_utm_universal(call: CallbackQuery, bot: Bot):
+    print(f"Удаление: {call.data}")  # Для отладки
+    
     if call.from_user.id not in admins_id:
         await call.answer("⛔ Нет доступа", show_alert=True)
         return
     
-    full_url = call.data.replace("delete_utm_", "")
+    # Извлекаем URL (всё, что после "delete_utm_" или "delete_")
+    full_url = call.data.replace("delete_utm_", "").replace("delete_", "")
     
     try:
-        # Прямой запрос к БД, без вызова функции delete_utm
-        from database import get_db_connection
-        conn = get_db_connection()
-        conn.execute('DELETE FROM utm_links WHERE url = ?', (full_url,))
+        from database import cursor, conn
+        cursor.execute('DELETE FROM utm_links WHERE url = ?', (full_url,))
         conn.commit()
-        conn.close()
         
-        await call.answer("✅ Ссылка удалена!", show_alert=True)
+        await call.answer("✅ UTM-ссылка удалена!", show_alert=True)
+        
+        # Обновляем список
         await list_utm(call, bot)
+        
     except Exception as e:
-        await call.answer(f"❌ Ошибка: {str(e)}", show_alert=True)
+        await call.answer(f"❌ Ошибка: {str(e)[:50]}", show_alert=True)
 
 @router.callback_query(F.data == "admin_lotery")
 async def adminka_lottery(call: CallbackQuery, bot: Bot):
