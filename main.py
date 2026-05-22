@@ -728,11 +728,17 @@ async def utm_callback(call: CallbackQuery, bot: Bot):
     else:
         await bot.answer_callback_query(call.id, "⛔ У вас нет доступа", show_alert=True)
 
-@router.callback_query(F.data == "delete_utm")
+@router.callback_query(F.data.startswith('delete_utm_'))
 async def delete_utm(call: CallbackQuery, bot: Bot, state: FSMContext):
-    if call.message.chat.id in admins_id:
-        await state.set_state(AddUtmState.waiting_for_delete)
-        await bot.send_message(call.from_user.id, "🌐 Введите название UTM-ссылки:", parse_mode='HTML')
+    if call.from_user.id in admins_id:
+        full_url = call.data[11:]  # убираем 'delete_utm_'
+        delete_utm_from_db(full_url)  # нужно добавить эту функцию в database.py
+        await bot.answer_callback_query(call.id, "✅ UTM-ссылка удалена!", show_alert=True)
+        await bot.delete_message(call.message.chat.id, call.message.message_id)
+        # Показать обновлённый список
+        await list_utm(call, bot)
+    else:
+        await bot.answer_callback_query(call.id, "⛔ У вас нет доступа", show_alert=True)
 
 @router.callback_query(F.data == "add_utm")
 async def add_utm(message: Message, bot: Bot, state: FSMContext):
