@@ -711,7 +711,7 @@ async def utm_callback(call: CallbackQuery, bot: Bot):
 
 @router.callback_query(F.data.startswith('utm_'))
 async def utm_callback(call: CallbackQuery, bot: Bot):
-    if call.message.chat.id in admins_id:
+    if call.from.user.id in admins_id:
         await bot.delete_message(call.message.chat.id, call.message.message_id)
         url1 = call.data.split('_')[1]
         url2 = call.data.split('_')[2]
@@ -727,7 +727,7 @@ async def utm_callback(call: CallbackQuery, bot: Bot):
 
 @router.callback_query(F.data == "delete_utm")
 async def delete_utm(call: CallbackQuery, bot: Bot, state: FSMContext):
-    if call.mesasge.chat.id in admins_id:
+    if call.message.chat.id in admins_id:
         await state.set_state(AddUtmState.waiting_for_delete)
         await bot.send_message(call.from_user.id, "🌐 Введите название UTM-ссылки:", parse_mode='HTML')
 
