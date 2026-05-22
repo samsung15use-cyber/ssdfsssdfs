@@ -724,6 +724,8 @@ async def utm_callback(call: CallbackQuery, bot: Bot):
         utm_link_use.button(text="⬅️ Назад", callback_data="list_utm")
         markup_utm_use = utm_link_use.adjust(1, 1).as_markup()
         await bot.send_message(call.from_user.id, f"<b>🍀 Вы выбрали ссылку <code>#{url_title}</code></b>\n\n<blockquote>👤 Все пользователи: {count_users}\n👤 Прошли ОП: {count_op_users}</blockquote>", parse_mode='HTML', reply_markup=markup_utm_use)
+    else:
+        await bot.answer_callback_query(call.id, "⛔ У вас нет доступа", show_alert=True)
 
 @router.callback_query(F.data == "delete_utm")
 async def delete_utm(call: CallbackQuery, bot: Bot, state: FSMContext):
