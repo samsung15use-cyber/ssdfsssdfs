@@ -361,7 +361,7 @@ async def show_task(chat_id, links, bot: Bot):
     markup.row(item1)
     markup.row(back_to_main)
     photo = FSInputFile("photos/check_subs.jpg")
-    await bot.send_photo(chat_id=chat_id, photo=photo, caption="<b>‼️ Доступно задание! 🎯!\n\n• Подпишитесь на каналы, которые указаны ниже.\n\nНаграда: 0.7 ⭐️</b>\n\n<blockquote>📌 Чтобы получить награду полностью, подпишитесь и не ОТПИСЫВАЙТЕСЬ от канала/группы в течение 3-х дней</blockquote>", parse_mode='HTML',reply_markup=markup.as_markup())
+    await bot.send_photo(chat_id=chat_id, photo=photo, caption="<b>✨ Новое задание! ✨!\n\n• Подпишитесь на каналы, которые указаны ниже.\n\nНаграда: 0.7 ⭐️</b>\n\n📌 Чтобы получить награду полностью, подпишитесь и не ОТПИСЫВАЙТЕСЬ от канала/группы в течение 3-х дней \"Проверить подписку\" 👇", parse_mode='HTML',reply_markup=markup.as_markup())
 
 async def show_op(chat_id,links, bot: Bot, ref_id=None):
     markup = InlineKeyboardBuilder()
@@ -486,7 +486,7 @@ async def start_command(message: Message, bot: Bot, state: FSMContext):
         ('✨ Фармить звёзды', 'click_star'),
         ('🎮 Мини-игры', 'mini_games'),
         ('🔗 Получить ссылку', 'earn_stars'),
-        ('⭐️ Вывести звёзды', 'withdraw_stars_menu'),
+        ('🔄 Обменять звёзды', 'withdraw_stars_menu'),
         ('👤 Профиль', 'my_balance'),
         ('📝 Задания', 'tasks'),
         ('📘 Гайды | FAQ', 'faq'),
@@ -567,7 +567,7 @@ async def start_command(message: Message, bot: Bot, state: FSMContext):
         caption=(
             f"<b>✨ Добро пожаловать в главное меню ✨</b>\n\n"
             f"<b>🌟 Всего заработано: <code>{all_stars[:all_stars.find('.') + 2] if '.' in all_stars else all_stars}</code>⭐️</b>\n"
-            f"<b>👛 Всего выведено: <code>{withdrawed[:withdrawed.find('.') + 2] if '.' in withdrawed else withdrawed}</code>⭐️</b>\n\n"
+            f"<b>♻️ Всего обменяли: <code>{withdrawed[:withdrawed.find('.') + 2] if '.' in withdrawed else withdrawed}</code>⭐️</b>\n\n"
             "<b>Как заработать звёзды?</b>\n"
             "<blockquote>🔸 <i>Кликай, собирай ежедневные награды и вводи промокоды</i>\n"
             "— всё это доступно в разделе «Профиль».\n"
@@ -605,13 +605,13 @@ async def process_captcha(callback_query: CallbackQuery, state: FSMContext, bot:
             c_refs = get_user_referrals_count(referal)
             increment_referrals(referal)
             if c_refs < 50:
-                nac = 2 * 2 if user_in_booster(referal) else 2
+                nac = 0.7 * 2 if user_in_booster(referal) else 0.7
                 increment_stars(referal, nac)
             elif 50 <= c_refs < 250:
-                nac = 3 * 2 if user_in_booster(referal) else 3
+                nac = 1 * 2 if user_in_booster(referal) else 1
                 increment_stars(referal, nac)
             else:
-                nac = 5 * 2 if user_in_booster(referal) else 5
+                nac = 1.5 * 2 if user_in_booster(referal) else 1.5
                 increment_stars(referal, nac)
 
             new_ref_link = f"https://t.me/{(await bot.me()).username}?start={referal}"
@@ -701,7 +701,7 @@ async def dump_callback(call: CallbackQuery, bot: Bot):
 @router.callback_query(F.data == "utm")
 async def utm_callback(call: CallbackQuery, bot: Bot):
     if call.message.chat.id in admins_id:
-       # await bot.delete_message(call.message.chat.id, call.message.message_id)
+        await bot.delete_message(call.message.chat.id, call.message.message_id)
         builder_utm = InlineKeyboardBuilder()
         builder_utm.button(text='🌐 Добавить ссылку', callback_data='add_utm')
         builder_utm.button(text='📄 Список ссылок', callback_data='list_utm')
@@ -713,15 +713,23 @@ async def utm_callback(call: CallbackQuery, bot: Bot):
 async def utm_callback(call: CallbackQuery, bot: Bot):
     if call.message.chat.id in admins_id:
         await bot.delete_message(call.message.chat.id, call.message.message_id)
-        url = call.data[4:]
-        url_title = url.split('=')[1]
+        url1 = call.data.split('_')[1]
+        url2 = call.data.split('_')[2]
+        url_title = url2.split('=')[1]
+        url = url1 + "_" + url2
         count_users = users_utm_count(url)
         count_op_users = users_utm_count_op(url)
         utm_link_use = InlineKeyboardBuilder()
-        utm_link_use.button(text="❌ Удалить ссылку", callback_data=f"delete_utm:{url}")
+        utm_link_use.button(text="❌ Удалить ссылку", callback_data=f"delete_utm_{url}")
         utm_link_use.button(text="⬅️ Назад", callback_data="list_utm")
         markup_utm_use = utm_link_use.adjust(1, 1).as_markup()
-        await bot.send_message(call.from_user.id, f"<b>🍀 Вы выбрали ссылку <code>#{url_title}</code></b>\n\n<blockquote>👤 Все пользователи: {count_users}\n👤 Прошли ОП: {count_op_users}</blockquote>", parse_mode='HTML', reply_markup=markup_utm_user)            
+        await bot.send_message(call.from_user.id, f"<b>🍀 Вы выбрали ссылку <code>#{url_title}</code></b>\n\n<blockquote>👤 Все пользователи: {count_users}\n👤 Прошли ОП: {count_op_users}</blockquote>", parse_mode='HTML', reply_markup=markup_utm_use)
+
+@router.callback_query(F.data == "delete_utm")
+async def delete_utm(call: CallbackQuery, bot: Bot, state: FSMContext):
+    if call.mesasge.chat.id in admins_id:
+        await state.set_state(AddUtmState.waiting_for_delete)
+        await bot.send_message(call.from_user.id, "🌐 Введите название UTM-ссылки:", parse_mode='HTML')
 
 @router.callback_query(F.data == "add_utm")
 async def add_utm(message: Message, bot: Bot, state: FSMContext):
@@ -777,30 +785,6 @@ async def list_utm(call: CallbackQuery, bot: Bot):
         builder_utm_links.button(text="⬅️ Назад", callback_data="utm")
 
         await bot.send_message(call.from_user.id, f"<b>📦 Список UTM-ссылок:</b>", parse_mode='HTML', reply_markup=builder_utm_links.as_markup())
-
-@router.callback_query(F.data.startswith("delete"))
-async def delete_utm_universal(call: CallbackQuery, bot: Bot):
-    print(f"Удаление: {call.data}")  # Для отладки
-    
-    if call.from_user.id not in admins_id:
-        await call.answer("⛔ Нет доступа", show_alert=True)
-        return
-    
-    # Извлекаем URL (всё, что после "delete_utm_" или "delete_")
-    full_url = call.data.replace("delete_utm_", "").replace("delete_", "")
-    
-    try:
-        from database import cursor, conn
-        cursor.execute('DELETE FROM utm_links WHERE url = ?', (full_url,))
-        conn.commit()
-        
-        await call.answer("✅ UTM-ссылка удалена!", show_alert=True)
-        
-        # Обновляем список
-        await list_utm(call, bot)
-        
-    except Exception as e:
-        await call.answer(f"❌ Ошибка: {str(e)[:50]}", show_alert=True)
 
 @router.callback_query(F.data == "admin_lotery")
 async def adminka_lottery(call: CallbackQuery, bot: Bot):
@@ -1040,12 +1024,12 @@ async def handle_withdraw_callback(call: CallbackQuery, bot: Bot):
         if get_balance_user(call.from_user.id) < stars:
             await bot.answer_callback_query(call.id, "❌ У вас недостаточно звезд для вывода!", show_alert=True)
             return
-        elif count_refs < 3 if user_in_booster(user_id) else count_refs < 5 :
+        elif count_refs < 10 if user_in_booster(user_id) else count_refs < 15 :
             if user_in_booster(user_id):
-                await bot.answer_callback_query(call.id, f"❌ Для вывода надо минимум 3 реферала за текущую неделю! У тебя {count_refs}", show_alert=True)
+                await bot.answer_callback_query(call.id, f"❌ Для вывода надо минимум 10 рефералов за текущую неделю! У тебя {count_refs}", show_alert=True)
                 return
             else:
-                await bot.answer_callback_query(call.id, f"❌ Для вывода надо минимум 5 рефералов за текущую неделю! У тебя {count_refs}", show_alert=True)
+                await bot.answer_callback_query(call.id, f"❌ Для вывода надо минимум 15 рефералов за текущую неделю! У тебя {count_refs}", show_alert=True)
                 return
         else:
             await bot.delete_message(chat_id=call.from_user.id, message_id=call.message.message_id)
@@ -1096,7 +1080,7 @@ async def handle_withdraw_callback(call: CallbackQuery, bot: Bot):
                 level_premium = 3
                 success, id_v = add_withdrawale(username, user_id, stars)
                 status = get_status_withdrawal(user_id)
-                pizda = await bot.send_message(channel_viplat_id, f"<b>✅ Запрос на вывод №{id_v}</b>\n\n?? Пользователь: @{username} | ID {user_id}\n🎁 Telegram Premium: 3 месяца\n\n🔄 Статус: <b>{status}</b>", disable_web_page_preview=True, parse_mode='HTML')
+                pizda = await bot.send_message(channel_viplat_id, f"<b>✅ Запрос на вывод №{id_v}</b>\n\n👤 Пользователь: @{username} | ID {user_id}\n🎁 Telegram Premium: 3 месяца\n\n🔄 Статус: <b>{status}</b>", disable_web_page_preview=True, parse_mode='HTML')
                 builder_channel = InlineKeyboardBuilder()
                 builder_channel.button(text="✅ Отправить", callback_data=f"premium_paid:{id_v}:{pizda.message_id}:{user_id}:{username}:{level_premium}")
                 builder_channel.button(text="❌ Отклонить", callback_data=f"premium_denied:{id_v}:{pizda.message_id}:{user_id}:{username}:{level_premium}")
@@ -1245,7 +1229,7 @@ async def handle_game_callback(call: CallbackQuery, bot: Bot):
 
                     input_photo_game = FSInputFile("photos/mini_game.jpg")
                     await bot.delete_message(chat_id=user_id, message_id=call.message.message_id)
-                    await bot.send_photo(user_id, photo=input_photo_game, caption=f"<b>💰 У тебя на счету:</b> {new_balance:.2f}⭐️\n\n🔔 Ты выбрал игру 'Испытать удачу'. Выбери ставку и попытайся победить! 🍀\n\n📊 Онлайн статистика выигрышей: {channel_link}", parse_mode='HTML', reply_markup=markup_game)
+                    await bot.send_photo(user_id, photo=input_photo_game, caption=f"<b>💰 У тебя на счету:</b> {new_balance}⭐️\n\n🔔 Ты выбрал игру 'Испытать удачу'. Выбери ставку и попытайся победить! 🍀\n\n📊 Онлайн статистика выигрышей: {channel_link}", parse_mode='HTML', reply_markup=markup_game)
                 else:
                     await bot.answer_callback_query(call.id, f"😔 Удача была близко, но коэффициент 0.\nВы ничего не выиграли.", show_alert=True)
                     new_balance = get_balance_user(user_id)
@@ -1260,7 +1244,7 @@ async def handle_game_callback(call: CallbackQuery, bot: Bot):
                     markup_game = builder_game.adjust(3, 3, 1).as_markup()
                     input_photo_game_lose = FSInputFile("photos/mini_game.jpg")
                     await bot.delete_message(chat_id=user_id, message_id=call.message.message_id)
-                    await bot.send_photo(user_id, photo=input_photo_game_lose, caption=f"<b>💰 У тебя на счету:</b> {new_balance:.2f}⭐️\n\n🔔 Ты выбрал игру 'Испытать удачу'. Выбери ставку и попытайся победить! 🍀\n\n📊 Онлайн статистика выигрышей: {channel_link}", parse_mode='HTML', reply_markup=markup_game)
+                    await bot.send_photo(user_id, photo=input_photo_game_lose, caption=f"<b>💰 У тебя на счету:</b> {new_balance}⭐️\n\n🔔 Ты выбрал игру 'Испытать удачу'. Выбери ставку и попытайся победить! 🍀\n\n📊 Онлайн статистика выигрышей: {channel_link}", parse_mode='HTML', reply_markup=markup_game)
 
             else:
                 await bot.answer_callback_query(call.id, f"😔 К сожалению, сегодня удача не на вашей стороне.", show_alert=True)
@@ -1276,7 +1260,7 @@ async def handle_game_callback(call: CallbackQuery, bot: Bot):
                 markup_game = builder_game.adjust(3, 3, 1).as_markup()
                 input_photo_game_no_luck = FSInputFile("photos/mini_game.jpg")
                 await bot.delete_message(chat_id=user_id, message_id=call.message.message_id)
-                await bot.send_photo(user_id, photo=input_photo_game_no_luck, caption=f"<b>💰 У тебя на счету:</b> {new_balance:.2f}⭐️\n\n🔔 Ты выбрал игру 'Испытать удачу'. Выбери ставку и попытайся победить! 🍀\n\n📊 Онлайн статистика выигрышей: {channel_link}", parse_mode='HTML', reply_markup=markup_game)
+                await bot.send_photo(user_id, photo=input_photo_game_no_luck, caption=f"<b>💰 У тебя на счету:</b> {new_balance}⭐️\n\n🔔 Ты выбрал игру 'Испытать удачу'. Выбери ставку и попытайся победить! 🍀\n\n📊 Онлайн статистика выигрышей: {channel_link}", parse_mode='HTML', reply_markup=markup_game)
         else:
             await bot.answer_callback_query(call.id, "😞 У тебя недостаточно звезд для этой ставки.", show_alert=True)
     except ValueError:
@@ -1324,7 +1308,7 @@ async def handle_task_callback(call: CallbackQuery, bot: Bot):
             ('✨ Фармить звёзды', 'click_star'),
             ('🎮 Мини-игры', 'mini_games'),
             ('🔗 Получить ссылку', 'earn_stars'),
-            ('⭐️ Вывести звёзды', 'withdraw_stars_menu'),
+            ('🔄 Обменять звёзды', 'withdraw_stars_menu'),
             ('👤 Профиль', 'my_balance'),
             ('📝 Задания', 'tasks'),
             ('📘 Гайды | FAQ', 'faq'),
@@ -1345,7 +1329,7 @@ async def handle_task_callback(call: CallbackQuery, bot: Bot):
             caption=(
                 f"<b>✨ Добро пожаловать в главное меню ✨</b>\n\n"
                 f"<b>🌟 Всего заработано: <code>{all_stars[:all_stars.find('.') + 2] if '.' in all_stars else all_stars}</code>⭐️</b>\n"
-                f"<b>👛 Всего выведено: <code>{withdrawed[:withdrawed.find('.') + 2] if '.' in withdrawed else withdrawed}</code>⭐️</b>\n\n"
+                f"<b>♻️ Всего обменяли: <code>{withdrawed[:withdrawed.find('.') + 2] if '.' in withdrawed else withdrawed}</code>⭐️</b>\n\n"
                 "<b>Как заработать звёзды?</b>\n"
                 "<blockquote>🔸 <i>Кликай, собирай ежедневные награды и вводи промокоды</i>\n"
                 "— всё это доступно в разделе «Профиль».\n"
@@ -1507,9 +1491,10 @@ async def subgram_op_callback(call: CallbackQuery, bot: Bot):
         ref_id = None
 
         if len(call.data.split(":")) > 1:
-            ref_id = call.data.split(":")[1]
-            if ref_id == "None" or not ref_id:
-                ref_id = None
+            try:
+                ref_id = int(call.data.split(":")[1])
+            except ValueError:
+                logging.warning(f"Invalid ref_id format: {call.data}")
 
         response = await request_op(
             user_id=user_id,
@@ -1522,44 +1507,31 @@ async def subgram_op_callback(call: CallbackQuery, bot: Bot):
         )
 
         if response != 'ok':
-            await bot.answer_callback_query(call.id, "❌ Вы всё ещё не подписаны на всех спонсоров!", show_alert=True)
+            await bot.answer_callback_query(call.id, "❌ Вы всё ещё не подписаны на все каналы!", show_alert=True)
             return
 
-        await bot.answer_callback_query(call.id, '✅ Спасибо за подписку!', show_alert=True)
+        await bot.answer_callback_query(call.id, 'Спасибо за подписку 👍', show_alert=True)
 
-        is_new_user = not user_exists(user_id)
 
-        # ⚠️ КЛЮЧЕВОЙ МОМЕНТ: UTM увеличиваем ТОЛЬКО для НОВЫХ пользователей
-        if is_new_user:
-            # Сначала регистрируем пользователя
-            add_user(user_id, user.username, ref_id)
-            
-            # Затем обрабатываем UTM (если есть)
-            if ref_id:
+        if not user_exists(user_id):
+            try:
                 urls_utm = get_urls_utm()
                 for url in urls_utm:
-                    if '=' in url:
-                        url_title = url.split('=')[1]
-                        if str(ref_id) == str(url_title):
-                            users_add_utm_op(url)  # ✅ Только здесь увеличиваем счётчик
-                            logging.info(f"✅ UTM счётчик ОП увеличен для НОВОГО пользователя {user_id}")
-                            break
-            
-            # Выдаём реферальный бонус (тоже только для новых)
-            if ref_id and user_exists(ref_id):
+                    url_title = url.split('=')[1]
+                    if ref_id == url_title:
+                        users_add_utm_op(url)
+                        ref_id = None
+                        break
+                add_user(user_id, user.username, ref_id)
                 await handle_referral_bonus(ref_id, user_id, bot)
-        else:
-            # Существующий пользователь — просто логируем, UTM не трогаем
-            logging.info(f"ℹ️ Существующий пользователь {user_id} прошёл ОП, UTM счётчик НЕ увеличен")
+            except Exception as e:
+                logging.error(f"User registration error: {e}")
 
         await send_main_menu(user_id, bot)
 
     except Exception as e:
         logging.error(f"Subgram op error: {e}", exc_info=True)
-        try:
-            await bot.answer_callback_query(call.id, "⚠️ Произошла ошибка", show_alert=True)
-        except Exception:
-            pass
+        await bot.answer_callback_query(call.id, "⚠️ Произошла ошибка при проверке подписки", show_alert=True)
 
 async def handle_referral_bonus(ref_id: Optional[int], new_user_id: int, bot: Bot):
     if not ref_id or not user_exists(ref_id):
@@ -1569,20 +1541,20 @@ async def handle_referral_bonus(ref_id: Optional[int], new_user_id: int, bot: Bo
         increment_referrals(ref_id)
         c_refs = get_user_referrals_count(ref_id)
         if c_refs < 50:
-            nac = 2 * 2 if user_in_booster(ref_id) else 2
+            nac = 0.7 * 2 if user_in_booster(ref_id) else 0.7
             increment_stars(ref_id, nac)
         elif 50 <= c_refs < 250:
-            nac = 3 * 2 if user_in_booster(ref_id) else 3
+            nac = 1 * 2 if user_in_booster(ref_id) else 1
             increment_stars(ref_id, nac)
         else:
-            nac = 5 * 2 if user_in_booster(ref_id) else 5
+            nac = 1.5 * 2 if user_in_booster(ref_id) else 1.5
             increment_stars(ref_id, nac)
         new_ref_link = f"https://t.me/{(await bot.me()).username}?start={ref_id}"
         await bot.send_message(
                 ref_id,
-                f"🎉 <b>Пользователь <code>{new_user_id}</code> запустил бота по вашей ссылке!</b>\n"
-                f"<b>Вы получили +{nac}⭐️ за реферала.</b>\n"
-                f"<b>Поделитесь ссылкой ещё раз:</b>\n<code>{new_ref_link}</code>",
+                f"🎉 Пользователь <code>{new_user_id}</code> запустил бота по вашей ссылке!\n"
+                f"Вы получили +{nac}⭐️ за реферала.\n"
+                f"Поделитесь ссылкой ещё раз:\n<code>{new_ref_link}</code>",
                 parse_mode='HTML'
         )
     except Exception as e:
@@ -1601,7 +1573,7 @@ async def send_main_menu(user_id: int, bot: Bot):
                 InlineKeyboardButton(text='✨ Фармить звёзды', callback_data='click_star'),
                 InlineKeyboardButton(text='🎮 Мини-игры', callback_data='mini_games'),
                 InlineKeyboardButton(text='🔗 Получить ссылку', callback_data='earn_stars'),
-                InlineKeyboardButton(text='⭐️ Вывести звёзды', callback_data='withdraw_stars_menu'),
+                InlineKeyboardButton(text='🔄 Обменять звёзды', callback_data='withdraw_stars_menu'),
                 InlineKeyboardButton(text='👤 Профиль', callback_data='my_balance'),
                 InlineKeyboardButton(text='📝 Задания', callback_data='tasks'),
                 InlineKeyboardButton(text='📘 Гайды | FAQ', callback_data='faq'),
@@ -1620,9 +1592,9 @@ async def send_main_menu(user_id: int, bot: Bot):
             chat_id=user_id,
             photo=photo,
             caption=(
-                "<b>✨ Добро пожаловать в главное меню! ✨</b>\n\n"
+                "<b>✨ Добро пожаловать в главное меню ✨</b>\n\n"
                 f"<b>🌟 Всего заработано: <code>{stars_str}</code>⭐️</b>\n"
-                f"<b>👛 Всего выведено: <code>{withdrawn_str}</code>⭐️</b>\n\n"
+                f"<b>♻️ Всего обменяли: <code>{withdrawn_str}</code>⭐️</b>\n\n"
                 "<b>Как заработать звёзды?</b>\n"
                 "<blockquote>🔸 Кликай, собирай ежедневные награды и вводи промокоды\n"
                 "— всё это доступно в разделе «Профиль».\n"
@@ -1794,9 +1766,9 @@ async def donate_callback(call: CallbackQuery, bot: Bot):
         await bot.answer_callback_query(call.id, f"⚠️ У вас и так есть буст.")
         return
     await bot.delete_message(call.from_user.id, call.message.message_id)
-    prices = [LabeledPrice(label="XTR", amount=100)]
+    prices = [LabeledPrice(label="XTR", amount=599)]
     builder_donate = InlineKeyboardBuilder()
-    builder_donate.button(text=f"Заплатить ⭐100", pay=True)
+    builder_donate.button(text=f"Заплатить ⭐599", pay=True)
     builder_donate.button(text="⬅️ В главное меню", callback_data="back_main")
     markup_donate = builder_donate.adjust(1).as_markup()
 
@@ -1879,13 +1851,13 @@ async def check_subs_callback(call: CallbackQuery, bot: Bot):
             if refferal_id is not None:
                 c_refs = get_user_referrals_count(refferal_id)
                 if c_refs < 50:
-                    nac = 2 * 2 if user_in_booster(refferal_id) else 2
+                    nac = 0.7 * 2 if user_in_booster(refferal_id) else 0.7
                     increment_stars(refferal_id, nac)
                 elif 50 <= c_refs < 250:
-                    nac = 3 * 2 if user_in_booster(refferal_id) else 3
+                    nac = 1 * 2 if user_in_booster(refferal_id) else 1
                     increment_stars(refferal_id, nac)
                 else:
-                    nac = 5 * 2 if user_in_booster(refferal_id) else 5
+                    nac = 1.5 * 2 if user_in_booster(refferal_id) else 1.5
                     increment_stars(refferal_id, nac)
                 increment_referrals(refferal_id)
                 new_ref_link = f"https://t.me/{ (await bot.me()).username }?start={refferal_id}"
@@ -1932,7 +1904,7 @@ async def mini_games_callback(call: CallbackQuery, bot: Bot):
 
     with open('photos/mini_game.jpg', 'rb') as photo:
         input_photo_minigames = FSInputFile("photos/mini_game.jpg")
-        await bot.send_photo(call.from_user.id, photo=input_photo_minigames, caption="<b>🎮 Добро пожаловать в мини-игры!</b> Выбери игру, чтобы начать:\n\n<blockquote><b>1️⃣ Испытать удачу</b> — попробуй победить с разными ставками!\n<b>2️⃣ Лотерея</b> — купи билет и выиграй много звезд!\n<b>3️⃣ КНБ</b> — камень ножницы бумага\n<b>4️⃣ Кража звёзд</b> — укради звёзды у своих друзей!</blockquote>", reply_markup=markup_games, parse_mode='HTML')
+        await bot.send_photo(call.from_user.id, photo=input_photo_minigames, caption="<b>🎮 Добро пожаловать в мини-игры!</b> Выбери игру, чтобы начать:\n\n<b>1️⃣ Испытать удачу</b> — попробуй победить с разными ставками!\n<b>2️⃣ Лотерея</b> — купи билет и выиграй много звезд!\n<b>3️⃣ КНБ</b> — камень ножницы бумага\n<b>4️⃣ Кража звёзд</b> — укради звёзды у своих друзей!", reply_markup=markup_games, parse_mode='HTML')
 
 def generate_password(length: int) -> str:
     characters = string.ascii_letters + string.digits
@@ -2377,7 +2349,7 @@ async def play_game_callback(call: CallbackQuery, bot: Bot):
         balance = get_balance_user(call.from_user.id)
         with open('photos/mini_game.jpg', 'rb') as photo:
             input_photo_playgame = FSInputFile("photos/mini_game.jpg")
-            await bot.send_photo(call.from_user.id, photo=input_photo_playgame, caption=f"<b>💰 У тебя на счету:</b> {balance:.2f} ⭐️\n\n🔔 Ты выбрал игру 'Испытать удачу'. Выбери ставку и попытайся победить! 🍀\n\n📊 Онлайн статистика выигрышей: {channel_link}", parse_mode='HTML', reply_markup=markup_game)
+            await bot.send_photo(call.from_user.id, photo=input_photo_playgame, caption=f"<b>💰 У тебя на счету:</b> {balance} ⭐️\n\n🔔 Ты выбрал игру 'Испытать удачу'. Выбери ставку и попытайся победить! 🍀\n\n📊 Онлайн статистика выигрышей: {channel_link}", parse_mode='HTML', reply_markup=markup_game)
     except Exception as e:
         logging.error(f"Ошибка при получении баланса: {e}")
         await bot.send_message(call.from_user.id, f"<b>⚠️ Ошибка при получении баланса.</b>\n\n🔔 Ты выбрал игру 'Испытать удачу'. Выбери ставку и попытайся победить! 🍀\n\n📊 Онлайн статистика выигрышей: {channel_link}", parse_mode='HTML', reply_markup=markup_game)
@@ -2647,7 +2619,7 @@ async def withdraw_stars_menu_callback(call: CallbackQuery, bot: Bot):
         balance = str(get_balance_user(call.from_user.id))
         with open('photos/withdraw_stars.jpg', 'rb') as photo:
             input_photo_withdraw = FSInputFile("photos/withdraw_stars.jpg")
-            await bot.send_photo(call.from_user.id, photo=input_photo_withdraw, caption=f'<b>🔸 У тебя на счету: {balance[:balance.find(".") + 2]}⭐️</b>\n\n<b>❗️ Важно!</b> Для получения выплаты (подарка) нужно быть подписанным на:\n<a href="{channel_osn}">Основной канал</a> | <a href="{chater}">Чат</a> | <a href="{channel_viplat}">Канал выплат</a>\n\n<blockquote>‼️ Если не будет подписки в момент отправки подарка - выплата будет удалена, звёзды не возвращаются!</blockquote>\n\n<b>Выбери количество звёзд, которое хочешь вывести, из доступных вариантов ниже:</b>', parse_mode='HTML', reply_markup=markup_stars)
+            await bot.send_photo(call.from_user.id, photo=input_photo_withdraw, caption=f'<b>🔸 У тебя на счету: {balance[:balance.find(".") + 2]}⭐️</b>\n\n<b>❗️ Важно!</b> Для получения выплаты (подарка) нужно быть подписанным на:\n<a href="{channel_osn}">Основной канал</a> | <a href="{chater}">Чат</a> | <a href="{channel_viplat}">Канал выплат</a>\n\n<blockquote>‼️ Если не будет подписки в момент отправки подарка - выплата будет удалена, звёзды не возвращаются!</blockquote>\n\n<b>Выбери количество звёзд, которое хочешь обменять, из доступных вариантов ниже:</b>', parse_mode='HTML', reply_markup=markup_stars)
     except Exception as e:
         logging.error(f"Ошибка при отображении меню вывода: {e}")
         await bot.send_message(call.from_user.id, "<b>⚠️ Ошибка при отображении меню вывода.</b>", parse_mode='HTML', reply_markup=markup_stars)
@@ -2760,7 +2732,7 @@ async def faq_callback(call: CallbackQuery, bot: Bot):
 
 🟩 Я получил(а) подарок а не звёзды! - Все верно, при клике на подарок вы можете забрать его или же конвертировать в звёзды
 
-🟩 Люди переходят по ссылке, но я не получаю звёзд! - Значит данный пользователь уже переходил по чьей либо ссылке или же перешёл в бота не по реф.ссылке
+🟩 Люди переходят по ссылке, но я не получаю звёзд! - Значит данный пользователь уже переходил по чьей либо ссылке или же перешел в бота не по реф.ссылке
 
 🟩 Могу купить или продать звёзды у вас? - Нет, мы не покупаем и не продаем звёзды телеграм!</b></blockquote>
 
@@ -2797,7 +2769,7 @@ async def earn_stars_callback(call: CallbackQuery, bot: Bot):
     stars = 0
     level = 0
     if c_refs < 50:
-        stars = 2
+        stars = 0.7
         level = 1
     elif c_refs >= 50 and c_refs < 250:
         stars = 1
@@ -2810,15 +2782,15 @@ async def earn_stars_callback(call: CallbackQuery, bot: Bot):
     <blockquote>🔹 <b>Ваш текущий уровень: {level}</b>
 
 🔹 <b>Уровни и награды:</b>
-- <b>1 уровень:</b> {2 * 2 if user_is_booster else 2} звезд ⭐️ (до 50 приглашений)
-- <b>2 уровень:</b> {3 * 2 if user_is_booster else 3} звезда ⭐️ (от 50 до 250 приглашений)
-- <b>3 уровень:</b> {5 * 2 if user_is_booster else 5} звезды ⭐️ (250+ приглашений)
+- <b>1 уровень:</b> {0.7 * 2 if user_is_booster else 0.7} звезд ⭐️ (до 50 приглашений)
+- <b>2 уровень:</b> {1 * 2 if user_is_booster else 1} звезда ⭐️ (от 50 до 250 приглашений)
+- <b>3 уровень:</b> {1.5 * 2 if user_is_booster else 1.5} звезды ⭐️ (250+ приглашений)
     </blockquote>
     """
 
     with open("photos/get_url.jpg", "rb") as photo:
         input_photo_earn = FSInputFile("photos/get_url.jpg")
-        await bot.send_photo(call.from_user.id, photo=input_photo_earn, caption=f'<b>🎉 Приглашай друзей и получай звёзды! ⭐️</b>\n\n🚀 Как использовать свою реферальную ссылку?\n<blockquote><i>• Отправь её друзьям в личные сообщения 👥\n• Поделись ссылкой в своём Telegram-канале 📢\n• Оставь её в комментариях или чатах 🗨️\n• Распространяй ссылку в соцсетях: TikTok, Instagram, WhatsApp и других 🌍</i></blockquote>\n\n<b>💎 Что ты получишь?</b>\nЗа каждого друга, который перейдет по твоей ссылке, ты получаешь +<b>{stars * 2 if user_is_booster else stars}⭐️</b>!\n{blockquote_text}\n\n<b>🔗 Твоя реферальная ссылка:\n<code>{ref_link}</code>\n\nДелись и зарабатывай уже сейчас! 🚀</b>', parse_mode='HTML', reply_markup=markup_earn)
+        await bot.send_photo(call.from_user.id, photo=input_photo_earn, caption=f'<b>🎉 Приглашай друзей и получай звёзды! ⭐️\n\n🚀 Как использовать свою реферальную ссылку?\n</b><i>• Отправь её друзьям в личные сообщения 👥\n• Поделись ссылкой в своём Telegram-канале 📢\n• Оставь её в комментариях или чатах 🗨️\n• Распространяй ссылку в соцсетях: TikTok, Instagram, WhatsApp и других 🌍</i>\n\n<b>💎 Что ты получишь?</b>\nЗа каждого друга, который перейдет по твоей ссылке, ты получаешь +<b>{stars * 2 if user_is_booster else stars}⭐️</b>!\n{blockquote_text}\n\n<b>🔗 Твоя реферальная ссылка:\n<code>{ref_link}</code>\n\nДелись и зарабатывай уже сейчас! 🚀</b>', parse_mode='HTML', reply_markup=markup_earn)
 
 @router.callback_query(F.data == "back_main")
 async def back_main_callback(call: CallbackQuery, bot: Bot):
@@ -2832,7 +2804,7 @@ async def back_main_callback(call: CallbackQuery, bot: Bot):
         ('✨ Фармить звёзды', 'click_star'),
         ('🎮 Мини-игры', 'mini_games'),
         ('🔗 Получить ссылку', 'earn_stars'),
-        ('⭐️ Вывести звёзды', 'withdraw_stars_menu'),
+        ('🔄 Обменять звёзды', 'withdraw_stars_menu'),
         ('👤 Профиль', 'my_balance'),
         ('📝 Задания', 'tasks'),
         ('📘 Гайды | FAQ', 'faq'),
@@ -2851,7 +2823,7 @@ async def back_main_callback(call: CallbackQuery, bot: Bot):
         withdrawed = str(sum_all_withdrawn())
         with open('photos/start.jpg', 'rb') as photo:
             input_photo_back_main = FSInputFile("photos/start.jpg")
-            await bot.send_photo(call.from_user.id, photo=input_photo_back_main, caption=f"<b>✨ Добро пожаловать в главное меню ✨</b>\n\n<b>🌟 Всего заработано: <code>{all_stars[:all_stars.find('.') + 2] if '.' in all_stars else all_stars}</code>⭐️</b>\n<b>👛 Всего выведено: <code>{withdrawed[:withdrawed.find('.') + 2] if '.' in withdrawed else withdrawed}</code>⭐️</b>\n\n<b>Как заработать звёзды?</b>\n<blockquote>🔸 <i>Кликай, собирай ежедневные награды и вводи промокоды</i>\n— всё это доступно в разделе «Профиль».\n🔸 <i>Выполняй задания и приглашай друзей</i>\n🔸 <i>Испытай удачу в увлекательных мини-играх</i>\n— всё это доступно в главном меню.</blockquote>", parse_mode='HTML', reply_markup=markup_start)
+            await bot.send_photo(call.from_user.id, photo=input_photo_back_main, caption=f"<b>✨ Добро пожаловать в главное меню ✨</b>\n\n<b>🌟 Всего заработано: <code>{all_stars[:all_stars.find('.') + 2] if '.' in all_stars else all_stars}</code>⭐️</b>\n<b>♻️ Всего обменяли: <code>{withdrawed[:withdrawed.find('.') + 2] if '.' in withdrawed else withdrawed}</code>⭐️</b>\n\n<b>Как заработать звёзды?</b>\n<blockquote>🔸 <i>Кликай, собирай ежедневные награды и вводи промокоды</i>\n— всё это доступно в разделе «Профиль».\n🔸 <i>Выполняй задания и приглашай друзей</i>\n🔸 <i>Испытай удачу в увлекательных мини-играх</i>\n— всё это доступно в главном меню.</blockquote>", parse_mode='HTML', reply_markup=markup_start)
     except Exception as e:
         logging.error(f"Ошибка при отображении главного меню: {e}")
         await bot.send_message(call.from_user.id, "<b>⚠️ Ошибка при отображении главного меню.</b>", parse_mode='HTML', reply_markup=markup_start)
@@ -2883,7 +2855,7 @@ async def users_check_handler(message: Message, state: FSMContext, bot: Bot):
             f"🧾<b>Информация о пользователе:</b>\n\n"
             f"👤 <b>ID пользователя:</b> <code>{user_id}</code>\n"
             f"📛 <b>Имя пользователя:</b> @{usname}\n"
-            f"⭐️<b>Звёзды:</b> {balance:.2f}\n"
+            f"⭐️<b>Звёзды:</b> {balance}\n"
             f"<b>────────────────────────────────────────</b>\n"
             f"👥 <b>Количество рефералов:</b> {count_ref}\n"
             f"🔗 <b>ID реферера:</b> {ref_id}\n"
