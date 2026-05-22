@@ -1553,13 +1553,13 @@ async def handle_referral_bonus(ref_id: Optional[int], new_user_id: int, bot: Bo
         increment_referrals(ref_id)
         c_refs = get_user_referrals_count(ref_id)
         if c_refs < 50:
-            nac = 0.7 * 2 if user_in_booster(ref_id) else 0.7
+            nac = 3 * 2 if user_in_booster(ref_id) else 3
             increment_stars(ref_id, nac)
         elif 50 <= c_refs < 250:
-            nac = 1 * 2 if user_in_booster(ref_id) else 1
+            nac = 5 * 2 if user_in_booster(ref_id) else 5
             increment_stars(ref_id, nac)
         else:
-            nac = 1.5 * 2 if user_in_booster(ref_id) else 1.5
+            nac = 7 * 2 if user_in_booster(ref_id) else 7
             increment_stars(ref_id, nac)
         new_ref_link = f"https://t.me/{(await bot.me()).username}?start={ref_id}"
         await bot.send_message(
