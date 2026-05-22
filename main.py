@@ -718,7 +718,7 @@ async def utm_callback(call: CallbackQuery, bot: Bot):
         count_users = users_utm_count(url)
         count_op_users = users_utm_count_op(url)
         utm_link_use = InlineKeyboardBuilder()
-        utm_link_use.button(text="❌ Удалить ссылку", callback_data=f"delete_utm_{url}")
+        utm_link_use.button(text="❌ Удалить ссылку", callback_data=f"delete_utm:{url}")
         utm_link_use.button(text="⬅️ Назад", callback_data="list_utm")
         markup_utm_use = utm_link_use.adjust(1, 1).as_markup()
         await bot.send_message(call.from_user.id, f"<b>🍀 Вы выбрали ссылку <code>#{url_title}</code></b>\n\n<blockquote>👤 Все пользователи: {count_users}\n👤 Прошли ОП: {count_op_users}</blockquote>", parse_mode='HTML', reply_markup=markup_utm_use)
