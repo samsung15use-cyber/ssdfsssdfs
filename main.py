@@ -2781,22 +2781,22 @@ async def earn_stars_callback(call: CallbackQuery, bot: Bot):
     stars = 0
     level = 0
     if c_refs < 50:
-        stars = 0.7
+        stars = 3
         level = 1
     elif c_refs >= 50 and c_refs < 250:
-        stars = 1
+        stars = 5
         level = 2
     else:
-        stars = 1.5
+        stars = 7
         level = 3
 
     blockquote_text = f"""
     <blockquote>🔹 <b>Ваш текущий уровень: {level}</b>
 
 🔹 <b>Уровни и награды:</b>
-- <b>1 уровень:</b> {0.7 * 2 if user_is_booster else 0.7} звезд ⭐️ (до 50 приглашений)
-- <b>2 уровень:</b> {1 * 2 if user_is_booster else 1} звезда ⭐️ (от 50 до 250 приглашений)
-- <b>3 уровень:</b> {1.5 * 2 if user_is_booster else 1.5} звезды ⭐️ (250+ приглашений)
+- <b>1 уровень:</b> {3 * 2 if user_is_booster else 3} звезд ⭐️ (до 50 приглашений)
+- <b>2 уровень:</b> {5 * 2 if user_is_booster else 5} звезда ⭐️ (от 50 до 250 приглашений)
+- <b>3 уровень:</b> {7 * 2 if user_is_booster else 7} звезды ⭐️ (250+ приглашений)
     </blockquote>
     """
 
