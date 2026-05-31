@@ -15,7 +15,7 @@ DAILY_COOLDOWN = 24 * 60 * 60 # не трогать
 DELAY_TIME = 160 # не трогать
 
 #основной канал
-channel_osn = "https://t.me/LokyGifts"
+channel_osn = "https://t.me/casseto"
 #чат
 chater = "https://t.me/munmab"
 id_chat = -1003586649297
